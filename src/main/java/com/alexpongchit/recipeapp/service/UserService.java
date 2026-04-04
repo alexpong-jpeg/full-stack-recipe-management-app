@@ -4,6 +4,9 @@ import com.alexpongchit.recipeapp.model.User;
 
 import java.util.Optional;
 
+/**
+ * Service contract for user-related business operations.
+ */
 public interface UserService {
     User registerUser(User user);
     Optional<User> findByUsername(String username);

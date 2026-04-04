@@ -6,6 +6,9 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * DTO used to receive recipe creation data from the client.
+ */
 @Getter
 @Setter
 public class RecipeRequest {

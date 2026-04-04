@@ -6,6 +6,9 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a recipe created and managed by a user.
+ */
 @Entity
 @Table(name = "recipes")
 @Getter

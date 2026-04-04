@@ -3,6 +3,9 @@ package com.alexpongchit.recipeapp.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Represents a category or label associated with a recipe.
+ */
 @Entity
 @Table(name = "tags")
 @Getter

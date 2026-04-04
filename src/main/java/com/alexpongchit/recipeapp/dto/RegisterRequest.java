@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO used for incoming user registration requests.
+ */
 @Getter
 @Setter
 public class RegisterRequest {

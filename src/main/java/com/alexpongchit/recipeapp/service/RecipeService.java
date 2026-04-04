@@ -5,6 +5,9 @@ import com.alexpongchit.recipeapp.model.Recipe;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service contract for recipe-related business operations.
+ */
 public interface RecipeService {
     Recipe createRecipe(Recipe recipe);
     List<Recipe> getAllRecipes();

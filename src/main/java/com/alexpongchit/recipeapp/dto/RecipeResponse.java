@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * DTO returned to clients when recipe data is sent in API responses.
+ */
 @Getter
 @Setter
 public class RecipeResponse {

@@ -3,6 +3,9 @@ package com.alexpongchit.recipeapp.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Represents a single ingredient associated with a recipe.
+ */
 @Entity
 @Table(name = "ingredients")
 @Getter

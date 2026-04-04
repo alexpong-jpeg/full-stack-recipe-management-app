@@ -6,6 +6,9 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an application user who can own multiple recipes.
+ */
 @Entity
 @Table(name = "users")
 @Getter

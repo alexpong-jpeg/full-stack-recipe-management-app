@@ -9,6 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for authentication-related operations.
+ *
+ * Phase I includes basic user registration and login endpoints so the project
+ * can demonstrate working backend functionality before JWT-based security is
+ * fully implemented in later phases.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -19,6 +26,9 @@ public class AuthController {
         this.userService = userService;
     }
 
+    /**
+     * Registers a new user after verifying that the username and email are unique.
+     */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
         if (userService.existsByUsername(request.getUsername())) {
@@ -32,6 +42,9 @@ public class AuthController {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+
+        // Phase I stores the password directly for simplicity during early testing.
+        // This should be replaced with password encoding in a later phase.
         user.setPassword(request.getPassword());
 
         User savedUser = userService.registerUser(user);
@@ -40,6 +53,12 @@ public class AuthController {
                 .body("User registered successfully with ID: " + savedUser.getId());
     }
 
+    /**
+     * Performs a basic login check using username and password.
+     *
+     * This is a temporary Phase I implementation intended for backend validation.
+     * Later phases should replace this approach with encoded passwords and JWT tokens.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
         return userService.findByUsername(request.getUsername())
