@@ -9,7 +9,7 @@ public interface RecipeService {
     Recipe createRecipe(Recipe recipe);
     List<Recipe> getAllRecipes();
     Optional<Recipe> getRecipeById(Long id);
-    List<Recipe> searchRecipesByName(String name);
+    List<Recipe> getRecipesByName(String name);
     Recipe updateRecipe(Long id, Recipe updatedRecipe);
     void deleteRecipe(Long id);
 }

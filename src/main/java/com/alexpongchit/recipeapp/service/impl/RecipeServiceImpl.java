@@ -33,7 +33,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public List<Recipe> searchRecipesByName(String name) {
+    public List<Recipe> getRecipesByName(String name) {
         return recipeRepository.findByNameContainingIgnoreCase(name);
     }
 
