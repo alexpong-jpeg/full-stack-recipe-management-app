@@ -1,12 +1,15 @@
 package com.alexpongchit.recipeapp.controller;
 
 import com.alexpongchit.recipeapp.dto.LoginRequest;
+import com.alexpongchit.recipeapp.dto.LoginResponse;
 import com.alexpongchit.recipeapp.dto.RegisterRequest;
 import com.alexpongchit.recipeapp.model.User;
+import com.alexpongchit.recipeapp.security.JwtService;
 import com.alexpongchit.recipeapp.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -21,9 +24,13 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     /**
@@ -63,8 +70,9 @@ public class AuthController {
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
         return userService.findByUsername(request.getUsername())
                 .map(user -> {
-                    if (user.getPassword().equals(request.getPassword())) {
-                        return ResponseEntity.ok("Login successful");
+                    if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                        String token = jwtService.generateToken(user.getUsername());
+                        return ResponseEntity.ok(new LoginResponse(token));
                     } else {
                         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
                     }
