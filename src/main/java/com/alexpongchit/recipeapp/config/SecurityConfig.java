@@ -4,23 +4,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Temporary security configuration used during Phase I development.
+ * Security configuration for the application.
  *
- * At this stage of the project, authentication and recipe endpoints are
- * permitted so the backend API can be tested through Postman while the
- * application foundation is being built. In later phases, recipe endpoints
- * should be protected using JWT-based authentication and authorization.
+ * During this stage, authentication endpoints remain public while JWT support
+ * is introduced. Recipe endpoints can remain temporarily open until the JWT
+ * filter is fully wired in the next step.
  */
 @Configuration
 public class SecurityConfig {
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF for local API testing during early backend development.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
