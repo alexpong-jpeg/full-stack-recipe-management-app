@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -18,28 +19,41 @@ class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        userService = new UserServiceImpl(userRepository);
+        userService = new UserServiceImpl(userRepository, passwordEncoder);
     }
 
     @Test
-    void registerUser_shouldSaveAndReturnUser() {
+    void registerUser_shouldEncodePasswordSaveAndReturnUser() {
         User user = new User();
         user.setUsername("alex");
         user.setEmail("alex@example.com");
         user.setPassword("password123");
 
-        when(userRepository.save(user)).thenReturn(user);
+        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
 
-        User savedUser = userService.registerUser(user);
+        User savedUser = new User();
+        savedUser.setUsername("alex");
+        savedUser.setEmail("alex@example.com");
+        savedUser.setPassword("encodedPassword123");
 
-        assertNotNull(savedUser);
-        assertEquals("alex", savedUser.getUsername());
-        verify(userRepository, times(1)).save(user);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        User result = userService.registerUser(user);
+
+        assertNotNull(result);
+        assertEquals("alex", result.getUsername());
+        assertEquals("encodedPassword123", result.getPassword());
+
+        verify(passwordEncoder, times(1)).encode("password123");
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
