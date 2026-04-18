@@ -3,6 +3,7 @@ package com.alexpongchit.recipeapp.service.impl;
 import com.alexpongchit.recipeapp.model.User;
 import com.alexpongchit.recipeapp.repository.UserRepository;
 import com.alexpongchit.recipeapp.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,9 +18,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -27,6 +30,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User registerUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
