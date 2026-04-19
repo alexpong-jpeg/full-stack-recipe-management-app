@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for recipe-related API operations.
@@ -125,6 +126,47 @@ public class RecipeController {
 
         recipeService.deleteRecipe(id);
         return ResponseEntity.ok("Recipe deleted successfully");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateRecipe(@PathVariable Long id, @Valid @RequestBody RecipeRequest request) {
+        Optional<Recipe> existingRecipeOptional = recipeService.getRecipeById(id);
+
+        if (existingRecipeOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recipe not found");
+        }
+
+        Recipe existingRecipe = existingRecipeOptional.get();
+
+        Recipe updatedRecipe = new Recipe();
+        updatedRecipe.setName(request.getName());
+        updatedRecipe.setInstructions(request.getInstructions());
+        updatedRecipe.setUser(existingRecipe.getUser());
+
+        List<Ingredient> ingredientList = new ArrayList<>();
+        if (request.getIngredients() != null) {
+            for (IngredientRequest ingredientRequest : request.getIngredients()) {
+                Ingredient ingredient = new Ingredient();
+                ingredient.setName(ingredientRequest.getName());
+                ingredient.setQuantity(ingredientRequest.getQuantity());
+                ingredient.setUnit(ingredientRequest.getUnit());
+                ingredientList.add(ingredient);
+            }
+        }
+        updatedRecipe.setIngredients(ingredientList);
+
+        List<Tag> tagList = new ArrayList<>();
+        if (request.getTags() != null) {
+            for (String tagName : request.getTags()) {
+                Tag tag = new Tag();
+                tag.setName(tagName);
+                tagList.add(tag);
+            }
+        }
+        updatedRecipe.setTags(tagList);
+
+        Recipe savedRecipe = recipeService.updateRecipe(id, updatedRecipe);
+        return ResponseEntity.ok(mapToResponse(savedRecipe));
     }
 
     /**

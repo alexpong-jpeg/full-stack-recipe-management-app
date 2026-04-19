@@ -64,8 +64,25 @@ public class RecipeServiceImpl implements RecipeService {
                 .map(existingRecipe -> {
                     existingRecipe.setName(updatedRecipe.getName());
                     existingRecipe.setInstructions(updatedRecipe.getInstructions());
-                    existingRecipe.setIngredients(updatedRecipe.getIngredients());
-                    existingRecipe.setTags(updatedRecipe.getTags());
+
+                    // Rebuild ingredient list and reassign recipe reference
+                    existingRecipe.getIngredients().clear();
+                    if (updatedRecipe.getIngredients() != null) {
+                        updatedRecipe.getIngredients().forEach(ingredient -> {
+                            ingredient.setRecipe(existingRecipe);
+                            existingRecipe.getIngredients().add(ingredient);
+                        });
+                    }
+
+                    // Rebuild tag list and reassign recipe reference
+                    existingRecipe.getTags().clear();
+                    if (updatedRecipe.getTags() != null) {
+                        updatedRecipe.getTags().forEach(tag -> {
+                            tag.setRecipe(existingRecipe);
+                            existingRecipe.getTags().add(tag);
+                        });
+                    }
+
                     return recipeRepository.save(existingRecipe);
                 })
                 .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + id));
