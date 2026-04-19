@@ -80,4 +80,31 @@ class UserServiceImplTest {
 
         assertTrue(exists);
     }
+
+    @Test
+    void existsByUsername_shouldReturnTrueWhenUsernameExists() {
+        User user = new User();
+        user.setUsername("alex");
+
+        when(userRepository.findByUsername("alex")).thenReturn(Optional.of(user));
+
+        boolean exists = userService.existsByUsername("alex");
+
+        assertTrue(exists);
+    }
+
+    @Test
+    void findById_shouldReturnUserWhenFound() {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("alex");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Optional<User> result = userService.findById(1L);
+
+        assertTrue(result.isPresent());
+        assertEquals(1L, result.get().getId());
+        assertEquals("alex", result.get().getUsername());
+    }
 }
