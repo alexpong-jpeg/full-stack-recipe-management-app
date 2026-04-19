@@ -2,6 +2,7 @@ package com.alexpongchit.recipeapp.service.impl;
 
 import com.alexpongchit.recipeapp.dto.ScaledIngredientResponse;
 import com.alexpongchit.recipeapp.dto.ScaledRecipeResponse;
+import com.alexpongchit.recipeapp.exception.ResourceNotFoundException;
 import com.alexpongchit.recipeapp.model.Recipe;
 import com.alexpongchit.recipeapp.repository.RecipeRepository;
 import com.alexpongchit.recipeapp.service.RecipeService;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 /**
  * Default implementation of the RecipeService interface.
- *
+ * <p>
  * Phase I uses this service to manage foundational recipe operations such as
  * creation, retrieval, searching, updating, and deletion.
  */
@@ -87,7 +88,7 @@ public class RecipeServiceImpl implements RecipeService {
 
                     return recipeRepository.save(existingRecipe);
                 })
-                .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found with id: " + id));
     }
 
     /**
@@ -101,7 +102,7 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public ScaledRecipeResponse scaleRecipe(Long recipeId, Integer originalServings, Integer desiredServings) {
         Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + recipeId));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found with id: " + recipeId));
 
         double scaleFactor = (double) desiredServings / originalServings;
 

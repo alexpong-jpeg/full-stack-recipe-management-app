@@ -14,11 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * REST controller for recipe-related API operations.
- *
+ * <p>
  * Phase I focuses on foundational CRUD behavior, allowing recipes to be created,
  * retrieved, searched, and deleted through the backend API.
  */
@@ -40,7 +39,7 @@ public class RecipeController {
     @PostMapping
     public ResponseEntity<?> createRecipe(@Valid @RequestBody RecipeRequest request) {
         User user = userService.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException("User not found with id: " + request.getUserId()));
 
         Recipe recipe = new Recipe();
         recipe.setName(request.getName());
@@ -94,10 +93,13 @@ public class RecipeController {
      * Retrieves a single recipe by its database identifier.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getRecipeById(@PathVariable Long id) {
-        return recipeService.getRecipeById(id)
-                .<ResponseEntity<?>>map(recipe -> ResponseEntity.ok(mapToResponse(recipe)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recipe not found"));
+    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable Long id) {
+        Recipe recipe = recipeService.getRecipeById(id)
+                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException(
+                        "Recipe not found with id: " + id
+                ));
+
+        return ResponseEntity.ok(mapToResponse(recipe));
     }
 
     /**
@@ -118,23 +120,19 @@ public class RecipeController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteRecipe(@PathVariable Long id) {
-        if (recipeService.getRecipeById(id).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recipe not found");
-        }
+        recipeService.getRecipeById(id)
+                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException("Recipe not found with id: " + id));
 
         recipeService.deleteRecipe(id);
         return ResponseEntity.ok("Recipe deleted successfully");
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRecipe(@PathVariable Long id, @Valid @RequestBody RecipeRequest request) {
-        Optional<Recipe> existingRecipeOptional = recipeService.getRecipeById(id);
-
-        if (existingRecipeOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recipe not found");
-        }
-
-        Recipe existingRecipe = existingRecipeOptional.get();
+    public ResponseEntity<RecipeResponse> updateRecipe(@PathVariable Long id, @Valid @RequestBody RecipeRequest request) {
+        Recipe existingRecipe = recipeService.getRecipeById(id)
+                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException(
+                        "Recipe not found with id: " + id
+                ));
 
         Recipe updatedRecipe = new Recipe();
         updatedRecipe.setName(request.getName());
@@ -168,17 +166,13 @@ public class RecipeController {
     }
 
     @PostMapping("/{id}/scale")
-    public ResponseEntity<?> scaleRecipe(@PathVariable Long id, @Valid @RequestBody ScaleRecipeRequest request) {
-        try {
-            ScaledRecipeResponse response = recipeService.scaleRecipe(
-                    id,
-                    request.getOriginalServings(),
-                    request.getDesiredServings()
-            );
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        }
+    public ResponseEntity<ScaledRecipeResponse> scaleRecipe(@PathVariable Long id, @Valid @RequestBody ScaleRecipeRequest request) {
+        ScaledRecipeResponse response = recipeService.scaleRecipe(
+                id,
+                request.getOriginalServings(),
+                request.getDesiredServings()
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**
