@@ -1,8 +1,6 @@
 package com.alexpongchit.recipeapp.controller;
 
-import com.alexpongchit.recipeapp.dto.IngredientRequest;
-import com.alexpongchit.recipeapp.dto.RecipeRequest;
-import com.alexpongchit.recipeapp.dto.RecipeResponse;
+import com.alexpongchit.recipeapp.dto.*;
 import com.alexpongchit.recipeapp.model.Ingredient;
 import com.alexpongchit.recipeapp.model.Recipe;
 import com.alexpongchit.recipeapp.model.Tag;
@@ -167,6 +165,20 @@ public class RecipeController {
 
         Recipe savedRecipe = recipeService.updateRecipe(id, updatedRecipe);
         return ResponseEntity.ok(mapToResponse(savedRecipe));
+    }
+
+    @PostMapping("/{id}/scale")
+    public ResponseEntity<?> scaleRecipe(@PathVariable Long id, @Valid @RequestBody ScaleRecipeRequest request) {
+        try {
+            ScaledRecipeResponse response = recipeService.scaleRecipe(
+                    id,
+                    request.getOriginalServings(),
+                    request.getDesiredServings()
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
     }
 
     /**

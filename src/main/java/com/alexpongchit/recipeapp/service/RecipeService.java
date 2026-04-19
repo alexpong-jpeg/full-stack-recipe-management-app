@@ -1,5 +1,6 @@
 package com.alexpongchit.recipeapp.service;
 
+import com.alexpongchit.recipeapp.dto.ScaledRecipeResponse;
 import com.alexpongchit.recipeapp.model.Recipe;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface RecipeService {
     List<Recipe> getRecipesByName(String name);
     Recipe updateRecipe(Long id, Recipe updatedRecipe);
     void deleteRecipe(Long id);
+    ScaledRecipeResponse scaleRecipe(Long recipeId, Integer originalServings, Integer desiredServings);
 }

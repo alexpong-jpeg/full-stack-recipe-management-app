@@ -1,5 +1,7 @@
 package com.alexpongchit.recipeapp.service.impl;
 
+import com.alexpongchit.recipeapp.dto.ScaledIngredientResponse;
+import com.alexpongchit.recipeapp.dto.ScaledRecipeResponse;
 import com.alexpongchit.recipeapp.model.Recipe;
 import com.alexpongchit.recipeapp.repository.RecipeRepository;
 import com.alexpongchit.recipeapp.service.RecipeService;
@@ -94,5 +96,37 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public void deleteRecipe(Long id) {
         recipeRepository.deleteById(id);
+    }
+
+    @Override
+    public ScaledRecipeResponse scaleRecipe(Long recipeId, Integer originalServings, Integer desiredServings) {
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + recipeId));
+
+        double scaleFactor = (double) desiredServings / originalServings;
+
+        ScaledRecipeResponse response = new ScaledRecipeResponse();
+        response.setId(recipe.getId());
+        response.setName(recipe.getName());
+        response.setInstructions(recipe.getInstructions());
+        response.setUsername(recipe.getUser().getUsername());
+        response.setOriginalServings(originalServings);
+        response.setDesiredServings(desiredServings);
+        response.setIngredients(
+                recipe.getIngredients().stream()
+                        .map(ingredient -> new ScaledIngredientResponse(
+                                ingredient.getName(),
+                                ingredient.getQuantity() != null ? ingredient.getQuantity() * scaleFactor : null,
+                                ingredient.getUnit()
+                        ))
+                        .toList()
+        );
+        response.setTags(
+                recipe.getTags().stream()
+                        .map(tag -> tag.getName())
+                        .toList()
+        );
+
+        return response;
     }
 }
