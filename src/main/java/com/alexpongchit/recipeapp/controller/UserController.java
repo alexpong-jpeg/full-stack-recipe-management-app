@@ -18,6 +18,12 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Returns the database ID of the currently authenticated user.
+     *
+     * This endpoint is used by the frontend when creating recipes so it can
+     * associate new recipes with the logged-in user.
+     */
     @GetMapping("/me")
     public ResponseEntity<Long> getCurrentUserId(Authentication authentication) {
         String username = authentication.getName();

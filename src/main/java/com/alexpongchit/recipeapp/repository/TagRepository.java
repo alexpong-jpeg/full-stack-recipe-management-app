@@ -4,11 +4,7 @@ import com.alexpongchit.recipeapp.model.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repository interface for Tag entities.
- *
- * Phase I uses this repository to support persistence of recipe tags and
- * categories. Custom query methods can be introduced in later phases as
- * search and filtering functionality becomes more advanced.
+ * Repository interface for Tag persistence operations.
  */
 public interface TagRepository extends JpaRepository<Tag, Long> {
 }

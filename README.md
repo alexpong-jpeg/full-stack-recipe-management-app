@@ -1,39 +1,53 @@
-# Full-Stack Recipe Management Web Application
+# Full-Stack Recipe Management Web Application — Backend
 
 ## Overview
-This project is a full-stack web application that allows users to store, manage, and retrieve personal recipes in a centralized platform. The application is being developed as a capstone project for CMSC 495.
+This backend powers a full-stack recipe management web application developed for CMSC 495. It provides REST APIs for user authentication, recipe management, recipe search, ingredient scaling, and current-user lookup for the Angular frontend.
 
-Phase I focuses on establishing the backend foundation of the system, including project setup, database connectivity, entity modeling, service and controller layers, testing, and documentation.
+The backend is built with Spring Boot and PostgreSQL and now reflects the Phase II implementation of the project, including JWT-based authentication, protected recipe endpoints, validation, global exception handling, and service/controller test coverage.
 
 ## Tech Stack
-- Java 17
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- Spring Security
-- Lombok
-- Maven
-- JUnit 5
-- Mockito
-- GitHub
+- **Java 17**
+- **Spring Boot**
+- **Spring Data JPA**
+- **PostgreSQL**
+- **Spring Security**
+- **JWT (JJWT)**
+- **Lombok**
+- **Maven**
+- **JUnit 5**
+- **Mockito**
+- **GitHub**
 
-## Phase I Features Completed
-- Spring Boot project setup
-- PostgreSQL datasource configuration
-- JPA entity creation for User, Recipe, Ingredient, and Tag
-- Repository layer implementation
+## Phase II Features Completed
+- Spring Boot backend setup and project structure
+- PostgreSQL database integration
+- JPA entity modeling for:
+  - User
+  - Recipe
+  - Ingredient
+  - Tag
+- Repository layer for persistence and lookup operations
 - Service layer using interfaces and implementation classes
-- DTOs for authentication and recipe requests/responses
-- REST API endpoints for:
-    - user registration
-    - user login
-    - recipe creation
-    - get all recipes
-    - get recipe by id
-    - search recipes by name
-    - delete recipe
-- Unit tests for user service and recipe service
-- Version control and incremental commits through GitHub
+- DTO layer for request and response payloads
+- BCrypt password hashing for user registration
+- JWT-based authentication for login and protected API access
+- Spring Security configuration with stateless session handling
+- CORS configuration to support the Angular frontend
+- Global exception handling with structured error responses
+- Recipe API features including:
+  - create recipe
+  - get all recipes
+  - get recipe by ID
+  - search recipes by name
+  - update recipe
+  - delete recipe
+  - scale recipe ingredients
+- Current authenticated user lookup endpoint for frontend recipe ownership
+- Service and controller test coverage for:
+  - authentication
+  - recipe CRUD behavior
+  - ingredient scaling
+  - validation and not-found scenarios
 
 ## Project Structure
 ```text
@@ -43,6 +57,7 @@ src
 │   │   ├── config
 │   │   ├── controller
 │   │   ├── dto
+│   │   ├── exception
 │   │   ├── model
 │   │   ├── repository
 │   │   ├── security
@@ -51,16 +66,18 @@ src
 │   └── resources
 │       └── application.properties
 └── test
-    └── java/com/alexpongchit/recipeapp/service
+    └── java/com/alexpongchit/recipeapp
+        ├── controller
+        └── service
 ```
 
 ## How to Run the Application
 
 ### Prerequisites
-- Java 17 installed
-- Maven installed, or use the included Maven wrapper
-- PostgreSQL installed and running
-- A PostgreSQL database named `recipeapp`
+* Java 17 installed
+* Maven installed, or use the included Maven wrapper
+* PostgreSQL installed and running
+* A PostgreSQL database named `recipeapp`
 
 ### Database Setup
 Create the database in PostgreSQL:
@@ -70,32 +87,43 @@ CREATE DATABASE recipeapp;
 ```
 
 Update `src/main/resources/application.properties` with your local database settings.
+You also need JWT configuration values in `application.properties`, such as:
+* `jwt.secret`
+* `jwt.expiration`
 
 ### Start the Application
-Run the project with:
+Run the backend with:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-The application will start on:
+The backend starts on: `http://localhost:8080`
 
-```text
-http://localhost:8080
-```
+## Security Notes
+* Passwords are encoded with BCrypt before being saved.
+* Login returns a JWT token.
+* Recipe endpoints require authentication.
+* The Angular frontend sends the JWT in the `Authorization: Bearer <token>` header.
+* CORS is configured to allow requests from `http://localhost:4200`.
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register`
-- `POST /api/auth/login`
+* `POST /api/auth/register`
+* `POST /api/auth/login`
+
+### Current User
+* `GET /api/users/me`
 
 ### Recipes
-- `POST /api/recipes`
-- `GET /api/recipes`
-- `GET /api/recipes/{id}`
-- `GET /api/recipes/search?name={recipeName}`
-- `DELETE /api/recipes/{id}`
+* `POST /api/recipes`
+* `GET /api/recipes`
+* `GET /api/recipes/{id}`
+* `GET /api/recipes/search?name={recipeName}`
+* `PUT /api/recipes/{id}`
+* `DELETE /api/recipes/{id}`
+* `POST /api/recipes/{id}/scale`
 
 ## Example Request Payloads
 
@@ -130,6 +158,29 @@ http://localhost:8080
 }
 ```
 
+### Update Recipe
+```json
+{
+  "name": "Updated Chicken and Rice",
+  "instructions": "Season chicken, cook rice, and combine everything.",
+  "userId": 1,
+  "ingredients": [
+    { "name": "Chicken Breast", "quantity": 3, "unit": "pieces" },
+    { "name": "Rice", "quantity": 2, "unit": "cups" },
+    { "name": "Olive Oil", "quantity": 1, "unit": "tbsp" }
+  ],
+  "tags": ["high-protein", "bulk prep", "dinner"]
+}
+```
+
+### Scale Recipe
+```json
+{
+  "originalServings": 2,
+  "desiredServings": 4
+}
+```
+
 ## Running Tests
 Run all tests with:
 
@@ -137,7 +188,17 @@ Run all tests with:
 ./mvnw test
 ```
 
-## Notes
-This is currently the Phase I implementation of the project. Future phases will expand functionality by improving authentication, adding update endpoints, refining validation, implementing ingredient scaling in business logic, and integrating the frontend.
+## Frontend Integration
+This backend is designed to work with the Angular frontend for the same project. During local development:
 
-At this stage, the `/api/recipes` endpoints are temporarily accessible for development and testing purposes. Future phases will secure these endpoints using JWT-based authentication and authorization.
+* **Backend:** `http://localhost:8080`
+* **Frontend:** `http://localhost:4200`
+
+The frontend uses:
+* `/api/auth/register` for user registration
+* `/api/auth/login` for authentication
+* `/api/users/me` for current-user lookup
+* `/api/recipes/**` for authenticated recipe operations
+
+## Notes
+This backend now represents the Phase II implementation of the project. It supports secure authentication, recipe ownership, CRUD operations, ingredient scaling, structured error handling, and frontend integration needed for the full-stack capstone workflow.

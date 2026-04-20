@@ -8,6 +8,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Configures Cross-Origin Resource Sharing (CORS) so the Angular frontend
+ * running on localhost:4200 can communicate with the Spring Boot backend.
+ */
 @Configuration
 public class CorsConfig {
 

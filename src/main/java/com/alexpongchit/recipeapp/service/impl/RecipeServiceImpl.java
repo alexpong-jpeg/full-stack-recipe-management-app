@@ -13,9 +13,9 @@ import java.util.Optional;
 
 /**
  * Default implementation of the RecipeService interface.
- * <p>
- * Phase I uses this service to manage foundational recipe operations such as
- * creation, retrieval, searching, updating, and deletion.
+ *
+ * This service encapsulates the core business logic for recipe creation,
+ * retrieval, search, update, deletion, and ingredient scaling.
  */
 @Service
 public class RecipeServiceImpl implements RecipeService {
@@ -27,7 +27,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     /**
-     * Saves a new recipe to the database.
+     * Persists a new recipe to the database.
      */
     @Override
     public Recipe createRecipe(Recipe recipe) {
@@ -43,7 +43,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     /**
-     * Retrieves a recipe by its database identifier.
+     * Looks up a recipe by its database identifier.
      */
     @Override
     public Optional<Recipe> getRecipeById(Long id) {
@@ -51,7 +51,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     /**
-     * Searches recipes by name using a case-insensitive partial match.
+     * Searches recipes by a case-insensitive partial match on the recipe name.
      */
     @Override
     public List<Recipe> getRecipesByName(String name) {
@@ -59,7 +59,10 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     /**
-     * Updates the main editable fields of an existing recipe.
+     * Updates the editable fields of an existing recipe.
+     *
+     * Ingredients and tags are rebuilt from the incoming updated recipe so the
+     * persisted child collections remain synchronized with the request payload.
      */
     @Override
     public Recipe updateRecipe(Long id, Recipe updatedRecipe) {
@@ -68,7 +71,8 @@ public class RecipeServiceImpl implements RecipeService {
                     existingRecipe.setName(updatedRecipe.getName());
                     existingRecipe.setInstructions(updatedRecipe.getInstructions());
 
-                    // Rebuild ingredient list and reassign recipe reference
+                    // Replace the current ingredient collection with the updated one
+                    // and reconnect each ingredient to the existing recipe entity.
                     existingRecipe.getIngredients().clear();
                     if (updatedRecipe.getIngredients() != null) {
                         updatedRecipe.getIngredients().forEach(ingredient -> {
@@ -77,7 +81,8 @@ public class RecipeServiceImpl implements RecipeService {
                         });
                     }
 
-                    // Rebuild tag list and reassign recipe reference
+                    // Replace the current tag collection with the updated one
+                    // and reconnect each tag to the existing recipe entity.
                     existingRecipe.getTags().clear();
                     if (updatedRecipe.getTags() != null) {
                         updatedRecipe.getTags().forEach(tag -> {
@@ -99,6 +104,10 @@ public class RecipeServiceImpl implements RecipeService {
         recipeRepository.deleteById(id);
     }
 
+    /**
+     * Calculates scaled ingredient quantities for a recipe without modifying
+     * the original stored recipe.
+     */
     @Override
     public ScaledRecipeResponse scaleRecipe(Long recipeId, Integer originalServings, Integer desiredServings) {
         Recipe recipe = recipeRepository.findById(recipeId)
@@ -113,6 +122,8 @@ public class RecipeServiceImpl implements RecipeService {
         response.setUsername(recipe.getUser().getUsername());
         response.setOriginalServings(originalServings);
         response.setDesiredServings(desiredServings);
+
+        // Scale each ingredient quantity while preserving the original ingredient names and units.
         response.setIngredients(
                 recipe.getIngredients().stream()
                         .map(ingredient -> new ScaledIngredientResponse(
@@ -122,6 +133,7 @@ public class RecipeServiceImpl implements RecipeService {
                         ))
                         .toList()
         );
+
         response.setTags(
                 recipe.getTags().stream()
                         .map(tag -> tag.getName())

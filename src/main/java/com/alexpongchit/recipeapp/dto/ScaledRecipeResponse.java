@@ -5,6 +5,10 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * DTO returned when a client requests scaled ingredient quantities
+ * for a recipe.
+ */
 @Getter
 @Setter
 public class ScaledRecipeResponse {

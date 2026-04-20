@@ -13,6 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configures Spring Security for JWT-based authentication.
+ *
+ * Authentication endpoints remain public, while recipe and user endpoints
+ * require a valid token. The application is stateless because authentication
+ * is handled through JWT rather than server-side sessions.
+ */
 @Configuration
 public class SecurityConfig {
 
@@ -34,6 +41,9 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    /**
+     * Builds the application's security filter chain.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

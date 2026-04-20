@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO used when a client requests scaled recipe ingredient quantities.
+ */
 @Getter
 @Setter
 public class ScaleRecipeRequest {

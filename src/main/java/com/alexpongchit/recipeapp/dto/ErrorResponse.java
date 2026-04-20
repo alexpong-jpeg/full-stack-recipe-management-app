@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Standard API error response returned by the global exception handler.
+ */
 @Getter
 @AllArgsConstructor
 public class ErrorResponse {

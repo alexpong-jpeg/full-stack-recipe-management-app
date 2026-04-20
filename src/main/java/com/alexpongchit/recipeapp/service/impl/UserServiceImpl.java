@@ -11,8 +11,8 @@ import java.util.Optional;
 /**
  * Default implementation of the UserService interface.
  *
- * Phase I uses this service to support user registration and user lookup
- * operations required by authentication and recipe ownership logic.
+ * This service supports user registration, password encoding, and lookup
+ * operations used by authentication and recipe ownership workflows.
  */
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Saves a new user to the database.
+     * Encodes a new user's password before saving the user to the database.
      */
     @Override
     public User registerUser(User user) {
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Finds a user by email.
+     * Finds a user by email address.
      */
     @Override
     public Optional<User> findByEmail(String email) {
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Checks whether a username is already in use.
+     * Returns true when the username is already in use.
      */
     @Override
     public boolean existsByUsername(String username) {
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Checks whether an email is already in use.
+     * Returns true when the email address is already in use.
      */
     @Override
     public boolean existsByEmail(String email) {

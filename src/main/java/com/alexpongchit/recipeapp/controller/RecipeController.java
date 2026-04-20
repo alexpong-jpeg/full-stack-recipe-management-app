@@ -1,6 +1,7 @@
 package com.alexpongchit.recipeapp.controller;
 
 import com.alexpongchit.recipeapp.dto.*;
+import com.alexpongchit.recipeapp.exception.ResourceNotFoundException;
 import com.alexpongchit.recipeapp.model.Ingredient;
 import com.alexpongchit.recipeapp.model.Recipe;
 import com.alexpongchit.recipeapp.model.Tag;
@@ -17,9 +18,9 @@ import java.util.List;
 
 /**
  * REST controller for recipe-related API operations.
- * <p>
- * Phase I focuses on foundational CRUD behavior, allowing recipes to be created,
- * retrieved, searched, and deleted through the backend API.
+ *
+ * This controller handles recipe creation, retrieval, search, update, deletion,
+ * and ingredient scaling for the full-stack recipe management application.
  */
 @RestController
 @RequestMapping("/api/recipes")
@@ -34,12 +35,13 @@ public class RecipeController {
     }
 
     /**
-     * Creates a new recipe and maps incoming DTO data into entity objects.
+     * Creates a new recipe from the incoming request payload and associates it
+     * with an existing user.
      */
     @PostMapping
     public ResponseEntity<?> createRecipe(@Valid @RequestBody RecipeRequest request) {
         User user = userService.findById(request.getUserId())
-                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException("User not found with id: " + request.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
 
         Recipe recipe = new Recipe();
         recipe.setName(request.getName());
@@ -48,7 +50,8 @@ public class RecipeController {
 
         List<Ingredient> ingredientList = new ArrayList<>();
         if (request.getIngredients() != null) {
-            // Build Ingredient entities from the request payload and attach them to the recipe.
+            // Convert ingredient DTOs into entity objects and attach them
+            // to the parent recipe so the relationship persists correctly.
             for (IngredientRequest ingredientRequest : request.getIngredients()) {
                 Ingredient ingredient = new Ingredient();
                 ingredient.setName(ingredientRequest.getName());
@@ -62,7 +65,7 @@ public class RecipeController {
 
         List<Tag> tagList = new ArrayList<>();
         if (request.getTags() != null) {
-            // Build Tag entities from tag names so they can be persisted with the recipe.
+            // Convert incoming tag strings into Tag entities linked to the recipe.
             for (String tagName : request.getTags()) {
                 Tag tag = new Tag();
                 tag.setName(tagName);
@@ -77,7 +80,7 @@ public class RecipeController {
     }
 
     /**
-     * Retrieves all recipes and converts them into response DTOs.
+     * Returns all recipes as response DTOs.
      */
     @GetMapping
     public ResponseEntity<List<RecipeResponse>> getAllRecipes() {
@@ -90,20 +93,18 @@ public class RecipeController {
     }
 
     /**
-     * Retrieves a single recipe by its database identifier.
+     * Returns a single recipe by ID.
      */
     @GetMapping("/{id}")
     public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable Long id) {
         Recipe recipe = recipeService.getRecipeById(id)
-                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException(
-                        "Recipe not found with id: " + id
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found with id: " + id));
 
         return ResponseEntity.ok(mapToResponse(recipe));
     }
 
     /**
-     * Searches recipes by name using a case-insensitive partial match.
+     * Searches for recipes whose names contain the supplied text.
      */
     @GetMapping("/search")
     public ResponseEntity<List<RecipeResponse>> searchRecipes(@RequestParam String name) {
@@ -116,23 +117,25 @@ public class RecipeController {
     }
 
     /**
-     * Deletes a recipe if it exists.
+     * Deletes a recipe by ID after confirming it exists.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteRecipe(@PathVariable Long id) {
         recipeService.getRecipeById(id)
-                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException("Recipe not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found with id: " + id));
 
         recipeService.deleteRecipe(id);
         return ResponseEntity.ok("Recipe deleted successfully");
     }
 
+    /**
+     * Updates the core fields, ingredients, and tags for an existing recipe.
+     * The existing owner is preserved rather than changed from the request body.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<RecipeResponse> updateRecipe(@PathVariable Long id, @Valid @RequestBody RecipeRequest request) {
         Recipe existingRecipe = recipeService.getRecipeById(id)
-                .orElseThrow(() -> new com.alexpongchit.recipeapp.exception.ResourceNotFoundException(
-                        "Recipe not found with id: " + id
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipe not found with id: " + id));
 
         Recipe updatedRecipe = new Recipe();
         updatedRecipe.setName(request.getName());
@@ -165,6 +168,10 @@ public class RecipeController {
         return ResponseEntity.ok(mapToResponse(savedRecipe));
     }
 
+    /**
+     * Returns a scaled version of the recipe's ingredients without modifying
+     * the stored recipe in the database.
+     */
     @PostMapping("/{id}/scale")
     public ResponseEntity<ScaledRecipeResponse> scaleRecipe(@PathVariable Long id, @Valid @RequestBody ScaleRecipeRequest request) {
         ScaledRecipeResponse response = recipeService.scaleRecipe(
@@ -176,7 +183,7 @@ public class RecipeController {
     }
 
     /**
-     * Converts a Recipe entity into a RecipeResponse DTO for cleaner API responses.
+     * Maps a Recipe entity into a simpler API response object.
      */
     private RecipeResponse mapToResponse(Recipe recipe) {
         RecipeResponse response = new RecipeResponse();
@@ -184,11 +191,14 @@ public class RecipeController {
         response.setName(recipe.getName());
         response.setInstructions(recipe.getInstructions());
         response.setUsername(recipe.getUser().getUsername());
+
+        // Flatten ingredient objects into display-friendly strings for the frontend.
         response.setIngredients(
                 recipe.getIngredients().stream()
                         .map(i -> i.getQuantity() + " " + i.getUnit() + " " + i.getName())
                         .toList()
         );
+
         response.setTags(
                 recipe.getTags().stream()
                         .map(Tag::getName)

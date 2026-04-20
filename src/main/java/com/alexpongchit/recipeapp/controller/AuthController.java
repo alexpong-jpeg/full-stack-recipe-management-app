@@ -13,11 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller for authentication-related operations.
+ * REST controller for authentication operations such as registration and login.
  *
- * Phase I includes basic user registration and login endpoints so the project
- * can demonstrate working backend functionality before JWT-based security is
- * fully implemented in later phases.
+ * This controller supports the application's JWT-based authentication flow by
+ * validating credentials and returning a token that the frontend can use for
+ * protected API requests.
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -34,7 +34,8 @@ public class AuthController {
     }
 
     /**
-     * Registers a new user after verifying that the username and email are unique.
+     * Registers a new user after confirming that the username and email
+     * are not already in use.
      */
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
@@ -50,8 +51,8 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
 
-        // Phase I stores the password directly for simplicity during early testing.
-        // This should be replaced with password encoding in a later phase.
+        // The raw password is passed into the service layer, where it is encoded
+        // before being persisted to the database.
         user.setPassword(request.getPassword());
 
         User savedUser = userService.registerUser(user);
@@ -61,15 +62,15 @@ public class AuthController {
     }
 
     /**
-     * Performs a basic login check using username and password.
-     *
-     * This is a temporary Phase I implementation intended for backend validation.
-     * Later phases should replace this approach with encoded passwords and JWT tokens.
+     * Authenticates a user by username and password and returns a JWT
+     * when the credentials are valid.
      */
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
         return userService.findByUsername(request.getUsername())
                 .map(user -> {
+                    // Compare the raw password from the request against the
+                    // encoded password stored for the user.
                     if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                         String token = jwtService.generateToken(user.getUsername());
                         return ResponseEntity.ok(new LoginResponse(token));
